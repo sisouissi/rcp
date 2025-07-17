@@ -7,6 +7,40 @@ import { createClient } from '@supabase/supabase-js';
 // 3. Set them as environment variables: SUPABASE_URL and SUPABASE_ANON_KEY.
 // For local development, you can replace the placeholder values below.
 
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export interface Database {
+  public: {
+    Tables: {
+      patients: {
+        Row: any;
+        Insert: any;
+        Update: any;
+      };
+      profiles: {
+        Row: any;
+        Insert: any;
+        Update: any;
+      };
+    };
+    Functions: {
+      [key: string]: any;
+    };
+    Enums: {
+      [key: string]: any;
+    };
+    CompositeTypes: {
+      [key: string]: any;
+    }
+  }
+}
+
 const supabaseUrl = process.env.SUPABASE_URL || "https://placeholder.supabase.co";
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || "placeholder-anon-key";
 
@@ -24,4 +58,4 @@ if (supabaseUrl === "https://placeholder.supabase.co" || supabaseAnonKey === "pl
   `);
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);

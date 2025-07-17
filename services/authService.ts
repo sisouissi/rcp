@@ -56,16 +56,57 @@ const getUser = async (): Promise<User | null> => {
 
 const onAuthStateChange = (callback: (user: User | null) => void) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if(event === 'SIGNED_IN' || event === 'INITIAL_SESSION'){
-           const user = await getUser();
-           callback(user);
-        } else if (event === 'SIGNED_OUT'){
+        if (event === 'SIGNED_OUT') {
+            callback(null);
+            return;
+        }
+
+        if (session?.user) {
+            try {
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('full_name, role, specialty')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profileError) {
+                    console.error('Error fetching user profile in auth change:', profileError.message);
+                    callback(null);
+                    return;
+                }
+
+                if (profile) {
+                    const appUser: User = {
+                        id: session.user.id,
+                        email: session.user.email,
+                        name: profile.full_name,
+                        role: profile.role,
+                        specialty: profile.specialty,
+                    };
+                    callback(appUser);
+                } else {
+                    // User exists in auth but not in profiles table
+                    callback(null);
+                }
+            } catch (e) {
+                console.error('Error in onAuthStateChange:', e);
+                callback(null);
+            }
+        } else if (event !== 'USER_DELETED') { // if no session, but not because of deletion, it's a signed out state
             callback(null);
         }
     });
 
     return subscription;
-}
+};
+
+const updateUserPassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+        console.error("Error updating password:", error.message);
+        throw new Error(`Erreur lors de la mise à jour du mot de passe: ${error.message}`);
+    }
+};
 
 export const authService = {
   signIn,
@@ -73,4 +114,5 @@ export const authService = {
   getUser,
   onAuthStateChange,
   getSession,
+  updateUserPassword,
 };

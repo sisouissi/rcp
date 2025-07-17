@@ -26,6 +26,16 @@ export const AddPatientIcon = () => (
     </svg>
 );
 
+export const UsersAdminIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+);
+
+
 export const SettingsIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12.22 2h-4.44a2 2 0 0 0-2 2v.79a2 2 0 0 1-1.69.94L3.1 8.92a2 2 0 0 0-.22 3.42l3.48 2.01a2 2 0 0 1 0 3.3l-3.48 2.01a2 2 0 0 0 .22 3.42l.98.56a2 2 0 0 1 1.69.94v.79a2 2 0 0 0 2 2h4.44a2 2 0 0 0 2-2v-.79a2 2 0 0 1 1.69-.94l.98-.56a2 2 0 0 0 .22-3.42l-3.48-2.01a2 2 0 0 1 0-3.3l3.48-2.01a2 2 0 0 0-.22-3.42l-.98-.56a2 2 0 0 1-1.69-.94V4a2 2 0 0 0-2-2z"></path>
@@ -37,5 +47,6 @@ export const navLinks = [
     { to: "/", label: "Tableau de Bord", icon: <DashboardIcon /> },
     { to: "/patients", label: "Liste des Patients", icon: <PatientsIcon /> },
     { to: "/add-patient", label: "Soumettre un Dossier", icon: <AddPatientIcon /> },
+    { to: "/users", label: "Utilisateurs", icon: <UsersAdminIcon /> },
     { to: "/settings", label: "Paramètres", icon: <SettingsIcon /> },
 ];

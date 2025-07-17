@@ -17,6 +17,15 @@ export interface User {
   specialty: string; // from profiles table
 }
 
+export interface Profile {
+  id: string;
+  full_name: string;
+  role: 'admin' | 'doctor';
+  specialty: string | null;
+  email?: string;
+}
+
+
 export interface GeneralPractitioner {
   name: string;
   contact: string;

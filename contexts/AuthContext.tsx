@@ -11,6 +11,7 @@ interface AuthContextType {
   isLoading: boolean;
   signIn: (email, password) => Promise<any>;
   signOut: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,16 +26,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return; // No subscription needed for demo mode
     }
 
+    authService.getUser().then(user => {
+        setUser(user);
+        setIsLoading(false);
+    });
+
     const subscription = authService.onAuthStateChange((currentUser) => {
       setUser(currentUser);
-      setIsLoading(false);
+      if(isLoading) setIsLoading(false);
     });
 
     // Cleanup subscription on unmount
     return () => {
       subscription?.unsubscribe();
     };
-  }, []);
+  }, [isLoading]);
 
   const signIn = async (email, password) => {
      if (isDemoMode) {
@@ -63,9 +69,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(null);
     }
   };
+  
+  const refreshUser = async () => {
+    if(isDemoMode) return;
+    const updatedUser = await authService.getUser();
+    setUser(updatedUser);
+  };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, isLoading, signIn, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

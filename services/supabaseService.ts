@@ -1,7 +1,5 @@
-
-
 import { supabase } from './supabaseClient';
-import { Patient, TnmDetails, TInvasion, TNodules, MType, NInvolvement, PerformanceStatus } from '../types';
+import { Patient, TnmDetails, TInvasion, TNodules, MType, NInvolvement, PerformanceStatus, Profile } from '../types';
 import { mockPatients, mockUsers } from '../data/mockData';
 
 const supabaseUrl = process.env.SUPABASE_URL || "https://placeholder.supabase.co";
@@ -9,6 +7,7 @@ const isDemoMode = supabaseUrl === "https://placeholder.supabase.co";
 
 // In-memory store for demo mode
 let demoPatients: Patient[] = JSON.parse(JSON.stringify(mockPatients));
+let demoProfiles: Profile[] = mockUsers.map(u => ({ id: u.id, full_name: u.name, role: u.role, specialty: u.specialty, email: u.email }));
 
 // Helper to convert snake_case from Supabase to camelCase for the app
 const toCamelCase = (obj: any): any => {
@@ -277,7 +276,7 @@ const importPatients = async (rawPatients: any[], importerId: string): Promise<{
     const importErrors = results.filter(r => r.error).map(r => r.error);
 
     if (isDemoMode) {
-        const transformedDemoPatients = validPatientsForDb.map(p => toCamelCase(p)).map((p: Patient) => ({...p, id: `pat-imported-${Date.now()}-${Math.random()}`}));
+        const transformedDemoPatients = validPatientsForDb.map(p => toCamelCase(p) as Patient).map((p: Patient) => ({...p, id: `pat-imported-${Date.now()}-${Math.random()}`}));
         demoPatients.unshift(...transformedDemoPatients);
         return { successCount: validPatientsForDb.length, errorCount: importErrors.length, errors: importErrors };
     }
@@ -299,6 +298,69 @@ const importPatients = async (rawPatients: any[], importerId: string): Promise<{
     return { successCount: validPatientsForDb.length, errorCount: importErrors.length, errors: importErrors };
 };
 
+// --- User Management ---
+
+const getAllProfiles = async (): Promise<Profile[]> => {
+    if (isDemoMode) {
+        return Promise.resolve(JSON.parse(JSON.stringify(demoProfiles)));
+    }
+    // Note: This only fetches from the public 'profiles' table.
+    // To get user emails, a protected Edge Function calling Supabase's Admin API would be needed.
+    const { data, error } = await supabase.from('profiles').select('id, full_name, role, specialty');
+    if (error) {
+        console.error("Error fetching user profiles:", error);
+        throw error;
+    }
+    return data as Profile[];
+};
+
+const updateUserProfile = async (userId: string, profileData: { full_name: string; specialty: string; role: 'admin' | 'doctor' }) => {
+    if (isDemoMode) {
+        const index = demoProfiles.findIndex(p => p.id === userId);
+        if (index > -1) {
+            demoProfiles[index] = { ...demoProfiles[index], ...profileData };
+        }
+        return;
+    }
+    const { error } = await supabase.from('profiles').update(profileData).eq('id', userId);
+    if (error) {
+        console.error("Error updating user profile:", error);
+        throw error;
+    }
+};
+
+const inviteUser = async (email: string, role: 'admin' | 'doctor') => {
+    if (isDemoMode) {
+        const newUser: Profile = { id: `user-demo-${Date.now()}`, email, full_name: "Nouveau Membre", role, specialty: "" };
+        demoProfiles.push(newUser);
+        alert(`Mode Démo: Invitation envoyée à ${email} avec le rôle ${role}.`);
+        return;
+    }
+    // This requires a Supabase Edge Function named 'invite-user'
+    const { error } = await supabase.functions.invoke('invite-user', {
+        body: { email, role },
+    });
+    if (error) {
+        console.error("Error inviting user:", error);
+        throw new Error(`Erreur lors de l'invitation: ${error.message}. Assurez-vous que la Edge Function 'invite-user' est déployée.`);
+    }
+};
+
+const deleteUser = async (userId: string) => {
+    if (isDemoMode) {
+        demoProfiles = demoProfiles.filter(p => p.id !== userId);
+        return;
+    }
+    // This requires a Supabase Edge Function named 'delete-user'
+    const { error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: userId },
+    });
+    if (error) {
+        console.error("Error deleting user:", error);
+        throw new Error(`Erreur lors de la suppression: ${error.message}. Assurez-vous que la Edge Function 'delete-user' est déployée.`);
+    }
+};
+
 
 export const supabaseService = {
     getAllPatients,
@@ -306,4 +368,9 @@ export const supabaseService = {
     addPatient,
     updatePatient,
     importPatients,
+    // User management
+    getAllProfiles,
+    updateUserProfile,
+    inviteUser,
+    deleteUser,
 };
