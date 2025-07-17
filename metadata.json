@@ -1,0 +1,6 @@
+{
+  "name": "RCP Oncologie Thoracique",
+  "description": "An application for managing Thoracic Oncology Multidisciplinary Team Meetings (MDTs), covering the entire patient care journey from diagnosis to follow-up.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
