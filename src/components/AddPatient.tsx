@@ -79,9 +79,9 @@ const initialPatientState: PatientFormData = {
   missingInformation: '',
 };
 
-const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number, totalSteps: number }) => {
-    const steps = ["Identification", "Anamnèse & Clinique", "Bilans", "Anapath & TNM", "Synthèse"];
-    return (
+const ProgressBar = ({ currentStep }: { currentStep: number }) => {
+  const steps = ["Identification", "Anamnèse & Clinique", "Bilans", "Anapath & TNM", "Synthèse"];
+  return (
         <nav aria-label="Progress">
             <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0">
                 {steps.map((name, index) => {
