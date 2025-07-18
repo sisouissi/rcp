@@ -1,110 +1,97 @@
 import { supabase } from './supabaseClient';
-import { AuthResponse } from '@supabase/supabase-js';
+import type { AuthResponse, AuthError, Session, User as SupabaseUser } from '@supabase/supabase-js';
 
-const signIn = async (email: string, password: string): Promise<AuthResponse['data']> => {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+// Type interne enrichi (ajoute le profil)
+export type User = {
+  id: string;
+  email: string | undefined;
+  name: string;
+  role: string;
+  specialty?: string;
+};
+
+/* ---------- AUTHENTIFICATION ---------- */
+
+const signIn = async (
+  email: string,
+  password: string
+): Promise<AuthResponse['data']> => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
   if (error) throw error;
   return data;
 };
 
 const signOut = async (): Promise<void> => {
-    await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
 };
 
-const getSession = async (): Promise<{session: Session | null, error: AuthError | null}> => {
-    const { data, error } = await supabase.auth.getSession();
-    return { session: data.session, error };
-}
+/* ---------- SESSION / PROFIL ---------- */
+
+const getSession = async (): Promise<{
+  session: Session | null;
+  error: AuthError | null;
+}> => {
+  const { data, error } = await supabase.auth.getSession();
+  return { session: data.session, error };
+};
 
 const getUser = async (): Promise<User | null> => {
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
 
-    if (sessionError) {
-        console.error('Error getting session:', sessionError.message);
-        return null;
-    }
+  if (sessionError || !sessionData.session?.user) return null;
 
-    if (!session?.user) {
-        return null;
-    }
+  const { user: authUser } = sessionData.session;
 
-    const profileResponse = await supabase
-        .from('profiles')
-        .select('full_name, role, specialty')
-        .eq('id', session.user.id)
-        .single();
-    
-    if(profileResponse.error) {
-        console.error('Error fetching user profile:', profileResponse.error.message);
-        // This might happen if a user exists in auth but not in profiles. Sign them out.
-        await supabase.auth.signOut();
-        return null;
-    }
-    
-    if(!profileResponse.data) return null;
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('full_name, role, specialty')
+    .eq('id', authUser.id)
+    .single();
 
-    const profile = profileResponse.data;
+  if (profileError) {
+    console.error('Error fetching profile:', profileError.message);
+    await supabase.auth.signOut();
+    return null;
+  }
 
-    return {
-        id: session.user.id,
-        email: session.user.email,
-        name: profile.full_name,
-        role: profile.role,
-        specialty: profile.specialty,
-    }
-}
+  return {
+    id: authUser.id,
+    email: authUser.email,
+    name: profile.full_name,
+    role: profile.role,
+    specialty: profile.specialty ?? undefined,
+  };
+};
 
+/* ---------- LISTENER ---------- */
 
 const onAuthStateChange = (callback: (user: User | null) => void) => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
-        if (event === 'SIGNED_OUT' || !session) {
-            callback(null);
-            return;
-        }
+  const { data: subscription } = supabase.auth.onAuthStateChange(
+    async (_event: string, session: Session | null) => {
+      if (!session?.user) {
+        callback(null);
+        return;
+      }
 
-        // For any event that results in a session, get the user profile.
-        try {
-            const profileResponse = await supabase
-                .from('profiles')
-                .select('full_name, role, specialty')
-                .eq('id', session.user.id)
-                .single();
+      const user = await getUser();
+      callback(user);
+    }
+  );
 
-            if (profileResponse.error) {
-                console.error('Error fetching profile on auth change:', profileResponse.error.message);
-                await supabase.auth.signOut();
-                callback(null);
-                return;
-            }
-            
-            const profile = profileResponse.data;
-            if (profile) {
-                 const user: User = {
-                    id: session.user.id,
-                    email: session.user.email,
-                    name: profile.full_name,
-                    role: profile.role,
-                    specialty: profile.specialty,
-                };
-                callback(user);
-            } else {
-                console.warn(`User ${session.user.id} is signed in but has no profile. Signing out.`);
-                await supabase.auth.signOut();
-                callback(null);
-            }
-        } catch (e) {
-            console.error("Unexpected error in onAuthStateChange handler:", e);
-            callback(null);
-        }
-    });
+  return subscription;
+};
 
-    return subscription;
-}
+/* ---------- EXPORT ---------- */
 
 export const authService = {
   signIn,
   signOut,
   getUser,
-  onAuthStateChange,
   getSession,
+  onAuthStateChange,
 };
