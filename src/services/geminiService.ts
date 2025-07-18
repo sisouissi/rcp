@@ -83,7 +83,7 @@ export const generateCaseSummaryForMdt = async (patient: Patient): Promise<MdtSu
       },
     });
 
-  const jsonText = response.text?.trim() ?? '';
+const jsonText = (response.text ?? '').trim();
 return JSON.parse(jsonText) as MdtSummary;
   } catch (error) {
     console.error("Error generating MDT summary:", error);
