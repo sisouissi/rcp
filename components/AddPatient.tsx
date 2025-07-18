@@ -79,7 +79,7 @@ const initialPatientState: PatientFormData = {
   tnm: initialTnmState,
   rcpQuestion: '',
   missingInformation: '',
-const ProgressBar = ({ currentStep }: { currentStep: number }) => {
+<ProgressBar currentStep={step} />
   const steps = ["Identification", "Anamnèse & Clinique", "Bilans", "Anapath & TNM", "Synthèse"];
   return (
     <nav aria-label="Progress">
