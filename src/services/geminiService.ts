@@ -1,23 +1,26 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { Patient, RcpDecision, MdtSummary, AiSuggestion, AiQueryType } from "../types";
 
+// Utilisation de l'objet process.env pour accéder aux variables d'environnement
 const API_KEY = process.env.GEMINI_API_KEY;
 
+// Déclaration d'une variable ai qui peut être nulle ou contiendre une instance de GoogleGenAI
 let ai: GoogleGenAI | null = null;
 
+// Vérification de l'existence de la clé API et création de l'instance si elle est définie
 if (API_KEY) {
   ai = new GoogleGenAI({ apiKey: API_KEY });
 } else {
-  console.warn(
-    `
+  console.warn(`
     *****************************************************************
     * WARNING: Gemini API Key is not configured.                    *
     * All AI-powered features will be disabled.                     *
-    * Please configure the GEMINI_API_KEY environment variable.     *
+    * Please configure the GEMINI_API_KEY environment variable.    *
     *****************************************************************
-    `
-  );
+  `);
 }
+
+export { ai };
 
 const checkAi = () => {
     if (!ai) {
