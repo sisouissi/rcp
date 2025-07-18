@@ -83,8 +83,8 @@ export const generateCaseSummaryForMdt = async (patient: Patient): Promise<MdtSu
       },
     });
 
-    const jsonText = response.text.trim();
-    return JSON.parse(jsonText) as MdtSummary;
+  const jsonText = response.text?.trim() ?? '';
+return JSON.parse(jsonText) as MdtSummary;
   } catch (error) {
     console.error("Error generating MDT summary:", error);
     if (error instanceof Error && error.message.includes("API key not valid")) {
@@ -163,9 +163,9 @@ Générez uniquement la lettre en Markdown. Ne pas inclure les titres de section
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
-    });
-    return response.text;
-  } catch (error) {
+});
+return response.text ?? '';
+} catch (error) {
     console.error("Error generating letter:", error);
     if (error instanceof Error && error.message.includes("API key not valid")) {
         throw new Error("La clé API Gemini est invalide. Veuillez vérifier sa configuration.");
