@@ -1,0 +1,32 @@
+diff --git a/src/components/AddPatient.tsx b/src/components/AddPatient.tsx
+index abc123..def456 100644
+--- a/src/components/AddPatient.tsx
++++ b/src/components/AddPatient.tsx
+@@ -330,1 +330,1 @@
+-            <ProgressBar currentStep={step} totalSteps={5} />
++            <ProgressBar currentStep={step} />
+
+diff --git a/src/contexts/AuthContext.tsx b/src/contexts/AuthContext.tsx
+index abc123..def456 100644
+--- a/src/contexts/AuthContext.tsx
++++ b/src/contexts/AuthContext.tsx
+@@ -16,1 +16,1 @@
+-const register = async (email: string, password: string) => { ... };
++// const register = async (email: string, password: string) => { ... };
+
+diff --git a/src/services/authService.ts b/src/services/authService.ts
+index abc123..def456 100644
+--- a/src/services/authService.ts
++++ b/src/services/authService.ts
+@@ -1,1 +1,1 @@
+-import { AuthResponse, Session, AuthError, User, AuthChangeEvent } from '@supabase/supabase-js';
++import { supabase } from './supabaseClient';
++import type { AuthResponse, Session, AuthError, User as SupabaseUser } from '@supabase/supabase-js';
+
+diff --git a/src/services/geminiService.ts b/src/services/geminiService.ts
+index abc123..def456 100644
+--- a/src/services/geminiService.ts
++++ b/src/services/geminiService.ts
+@@ -249,1 +249,1 @@
+-const jsonText = response.text.trim();
++const jsonText = (response.text ?? '').trim();
