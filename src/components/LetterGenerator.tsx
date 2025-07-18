@@ -56,7 +56,7 @@ const LetterGenerator: React.FC<LetterGeneratorProps> = ({ patient }) => {
                 onChange={handleDecisionChange}
                 value={selectedDecision?.date || ''}
             >
-                {patient.rcpHistory.map(d => (
+                {patient.rcpHistory.map((d: RcpDecision) => (
                     <option key={d.date} value={d.date}>RCP du {d.date} - {d.decision.substring(0, 50)}...</option>
                 ))}
             </select>
