@@ -79,29 +79,45 @@ const initialPatientState: PatientFormData = {
   tnm: initialTnmState,
   rcpQuestion: '',
   missingInformation: '',
-};
-
-const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number, totalSteps: number }) => {
-    const steps = ["Identification", "Anamnèse & Clinique", "Bilans", "Anapath & TNM", "Synthèse"];
-    return (
-        <nav aria-label="Progress">
-            <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0">
-                {steps.map((name, index) => {
-                    const stepNumber = index + 1;
-                    const isCompleted = currentStep > stepNumber;
-                    const isCurrent = currentStep === stepNumber;
-                    return (
-                        <li key={name} className="md:flex-1">
-                             <div className={`group flex w-full flex-col border-l-4 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${isCurrent ? 'border-blue-600' : isCompleted ? 'border-blue-600' : 'border-slate-200 hover:border-slate-300'}`}>
-                                <span className={`text-sm font-medium transition-colors ${isCurrent ? 'text-blue-600' : isCompleted ? 'text-blue-600' : 'text-slate-500 group-hover:text-slate-700'}`}>{`Étape ${stepNumber}`}</span>
-                                <span className="text-sm font-medium">{name}</span>
-                            </div>
-                        </li>
-                    )
-                })}
-            </ol>
-        </nav>
-    );
+const ProgressBar = ({ currentStep }: { currentStep: number }) => {
+  const steps = ["Identification", "Anamnèse & Clinique", "Bilans", "Anapath & TNM", "Synthèse"];
+  return (
+    <nav aria-label="Progress">
+      <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0">
+        {steps.map((name, index) => {
+          const stepNumber = index + 1;
+          const isCompleted = currentStep > stepNumber;
+          const isCurrent = currentStep === stepNumber;
+          return (
+            <li key={name} className="md:flex-1">
+              <div
+                className={`group flex w-full flex-col border-l-4 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${
+                  isCurrent
+                    ? 'border-blue-600'
+                    : isCompleted
+                    ? 'border-blue-600'
+                    : 'border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <span
+                  className={`text-sm font-medium transition-colors ${
+                    isCurrent
+                      ? 'text-blue-600'
+                      : isCompleted
+                      ? 'text-blue-600'
+                      : 'text-slate-500 group-hover:text-slate-700'
+                  }`}
+                >
+                  {`Étape ${stepNumber}`}
+                </span>
+                <span className="text-sm font-medium">{name}</span>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
 };
 
 const FormSection: React.FC<{title: string; children: React.ReactNode}> = ({title, children}) => (
