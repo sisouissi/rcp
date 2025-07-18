@@ -4,45 +4,11 @@ import { createClient } from '@supabase/supabase-js';
 // You must provide your Supabase project credentials for the application to work.
 // 1. Create a project at https://supabase.com/
 // 2. Find your Project URL and anon public key in Project Settings > API.
-// 3. Set them as environment variables: SUPABASE_URL and SUPABASE_ANON_KEY.
+// 3. Set them as environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.
 // For local development, you can replace the placeholder values below.
 
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
-
-export interface Database {
-  public: {
-    Tables: {
-      patients: {
-        Row: any;
-        Insert: any;
-        Update: any;
-      };
-      profiles: {
-        Row: any;
-        Insert: any;
-        Update: any;
-      };
-    };
-    Functions: {
-      [key: string]: any;
-    };
-    Enums: {
-      [key: string]: any;
-    };
-    CompositeTypes: {
-      [key: string]: any;
-    }
-  }
-}
-
-const supabaseUrl = process.env.SUPABASE_URL || "https://placeholder.supabase.co";
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || "placeholder-anon-key";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key";
 
 if (supabaseUrl === "https://placeholder.supabase.co" || supabaseAnonKey === "placeholder-anon-key") {
   // We don't throw an error here, as it would crash the entire application.
@@ -53,9 +19,9 @@ if (supabaseUrl === "https://placeholder.supabase.co" || supabaseAnonKey === "pl
     *****************************************************************
     * WARNING: Supabase credentials are not configured.             *
     * The application will not connect to the backend.              *
-    * Please configure SUPABASE_URL and SUPABASE_ANON_KEY env vars. *
+    * Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY env vars. *
     *****************************************************************
   `);
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

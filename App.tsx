@@ -1,3 +1,5 @@
+
+
 import React, { useState } from 'react';
 import { HashRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
@@ -5,8 +7,8 @@ import PatientList from './components/PatientList';
 import PatientDetail from './components/PatientDetail';
 import AddPatient from './components/AddPatient';
 import Settings from './components/Settings';
-import Users from './components/Users';
 import Login from './components/Login';
+import RcpBoard from './components/RcpBoard';
 import { navLinks } from './constants';
 import { useAuth } from './contexts/AuthContext';
 
@@ -61,13 +63,7 @@ const App: React.FC = () => {
             </div>
             <div className="flex-1 mt-6">
                 <nav className="flex-1 px-2 space-y-1">
-                    {navLinks
-                      .filter(link => {
-                        if (link.to === '/add-patient' && user.role !== 'doctor') return false;
-                        if (link.to === '/users' && user.role !== 'admin') return false;
-                        return true;
-                      })
-                      .map((link) => (
+                    {navLinks.map((link) => (
                         <NavLink
                             key={link.label}
                             to={link.to}
@@ -134,11 +130,11 @@ const App: React.FC = () => {
                             <Routes>
                                 <Route path="/" element={<Navigate replace to="/dashboard" />} />
                                 <Route path="/dashboard" element={<Dashboard />} />
+                                <Route path="/rcp-board" element={<RcpBoard />} />
                                 <Route path="/patients" element={<PatientList />} />
                                 <Route path="/patients/:id" element={<PatientDetail />} />
                                 <Route path="/add-patient" element={<AddPatient />} />
                                 <Route path="/settings" element={<Settings />} />
-                                <Route path="/users" element={<Users />} />
                             </Routes>
                         </div>
                     </main>

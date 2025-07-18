@@ -3,7 +3,7 @@ import { User } from '../types';
 import { authService } from '../services/authService';
 import { mockUsers } from '../data/mockData';
 
-const supabaseUrl = process.env.SUPABASE_URL || "https://placeholder.supabase.co";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
 const isDemoMode = supabaseUrl === "https://placeholder.supabase.co";
 
 interface AuthContextType {
@@ -11,7 +11,6 @@ interface AuthContextType {
   isLoading: boolean;
   signIn: (email, password) => Promise<any>;
   signOut: () => void;
-  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,21 +25,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return; // No subscription needed for demo mode
     }
 
-    authService.getUser().then(user => {
-        setUser(user);
-        setIsLoading(false);
-    });
-
     const subscription = authService.onAuthStateChange((currentUser) => {
       setUser(currentUser);
-      if(isLoading) setIsLoading(false);
+      setIsLoading(false);
     });
 
     // Cleanup subscription on unmount
     return () => {
       subscription?.unsubscribe();
     };
-  }, [isLoading]);
+  }, []);
 
   const signIn = async (email, password) => {
      if (isDemoMode) {
@@ -69,15 +63,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(null);
     }
   };
-  
-  const refreshUser = async () => {
-    if(isDemoMode) return;
-    const updatedUser = await authService.getUser();
-    setUser(updatedUser);
-  };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signOut, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

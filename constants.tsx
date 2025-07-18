@@ -9,6 +9,17 @@ export const DashboardIcon = () => (
     </svg>
 );
 
+export const RcpIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+        <path d="M12 11h4"></path>
+        <path d="M12 16h4"></path>
+        <path d="M8 11h.01"></path>
+        <path d="M8 16h.01"></path>
+    </svg>
+);
+
 export const PatientsIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
@@ -26,16 +37,6 @@ export const AddPatientIcon = () => (
     </svg>
 );
 
-export const UsersAdminIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-);
-
-
 export const SettingsIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12.22 2h-4.44a2 2 0 0 0-2 2v.79a2 2 0 0 1-1.69.94L3.1 8.92a2 2 0 0 0-.22 3.42l3.48 2.01a2 2 0 0 1 0 3.3l-3.48 2.01a2 2 0 0 0 .22 3.42l.98.56a2 2 0 0 1 1.69.94v.79a2 2 0 0 0 2 2h4.44a2 2 0 0 0 2-2v-.79a2 2 0 0 1 1.69-.94l.98-.56a2 2 0 0 0 .22-3.42l-3.48-2.01a2 2 0 0 1 0-3.3l3.48-2.01a2 2 0 0 0-.22-3.42l-.98-.56a2 2 0 0 1-1.69-.94V4a2 2 0 0 0-2-2z"></path>
@@ -45,8 +46,8 @@ export const SettingsIcon = () => (
 
 export const navLinks = [
     { to: "/", label: "Tableau de Bord", icon: <DashboardIcon /> },
-    { to: "/patients", label: "Liste des Patients", icon: <PatientsIcon /> },
+    { to: "/rcp-board", label: "Salle de RCP", icon: <RcpIcon /> },
+    { to: "/patients", label: "Tous les Dossiers", icon: <PatientsIcon /> },
     { to: "/add-patient", label: "Soumettre un Dossier", icon: <AddPatientIcon /> },
-    { to: "/users", label: "Utilisateurs", icon: <UsersAdminIcon /> },
     { to: "/settings", label: "Paramètres", icon: <SettingsIcon /> },
 ];

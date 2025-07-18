@@ -5,11 +5,12 @@ import { useParams } from 'react-router-dom';
 import { TnmClassifier } from './TnmClassifier';
 import LetterGenerator from './LetterGenerator';
 import { Card } from './ui/Card';
-import { Patient, TnmDetails, SYMPTOM_OPTIONS, EvidenceCategory } from '../types';
+import { Patient, TnmDetails, SYMPTOM_OPTIONS, EvidenceCategory, RcpDecision } from '../types';
 import CaseSummaryGenerator from './CaseSummaryGenerator';
 import AiAssistant from './AiAssistant';
 import { supabaseService } from '../services/supabaseService';
 import { useAuth } from '../contexts/AuthContext';
+import RcpDecisionModal from './RcpDecisionModal';
 
 const EvidenceBadge: React.FC<{ category?: EvidenceCategory }> = ({ category }) => {
     if (!category) return null;
@@ -36,19 +37,22 @@ const PatientDetail: React.FC = () => {
   const [patient, setPatient] = useState<Patient | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('summary');
+  const [isDecisionModalOpen, setDecisionModalOpen] = useState(false);
+
+  const fetchPatient = async () => {
+    if (!id) return;
+    setIsLoading(true);
+    try {
+      const data = await supabaseService.getPatient(id);
+      setPatient(data);
+    } catch (error) {
+      console.error("Failed to fetch patient", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPatient = async () => {
-      if (!id) return;
-      try {
-        const data = await supabaseService.getPatient(id);
-        setPatient(data);
-      } catch (error) {
-        console.error("Failed to fetch patient", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchPatient();
   }, [id]);
 
@@ -57,6 +61,17 @@ const PatientDetail: React.FC = () => {
         const updatedPatient = { ...patient, tnm: newTnm };
         setPatient(updatedPatient);
         await supabaseService.updatePatient(updatedPatient);
+    }
+  };
+
+  const handleSaveDecision = async (newDecision: RcpDecision) => {
+    if (patient) {
+      const updatedHistory = [...patient.rcpHistory, newDecision];
+      // When a decision is added, status moves to 'discussed'
+      const updatedPatient = { ...patient, rcpHistory: updatedHistory, rcpStatus: 'discussed' as const };
+      setPatient(updatedPatient);
+      await supabaseService.updatePatient(updatedPatient);
+      setDecisionModalOpen(false);
     }
   };
   
@@ -164,6 +179,11 @@ const PatientDetail: React.FC = () => {
                     <InfoField label="Examen Physique" value={<p className="whitespace-pre-wrap">{patient.clinicalInfo.exam.physicalExamDetails}</p>} />
                     <InfoField label="Poids / Taille / IMC" value={`${patient.clinicalInfo.exam.weightKg} kg / ${patient.clinicalInfo.exam.heightCm} cm (${(patient.clinicalInfo.exam.weightKg / ((patient.clinicalInfo.exam.heightCm/100)**2)).toFixed(1)} kg/m²)`} />
                 </Section>
+                <Section title="Contexte Psycho-Social et Avis">
+                    <InfoField label="Contexte Psycho-social" value={<p className="whitespace-pre-wrap">{patient.psychoSocial.context}</p>} />
+                    <InfoField label="Souhaits du patient" value={<p className="whitespace-pre-wrap">{patient.psychoSocial.patientWishes}</p>} />
+                    <InfoField label="Avis du Médecin Traitant" value={<p className="whitespace-pre-wrap">{patient.psychoSocial.gpOpinion}</p>} />
+                </Section>
             </div>
         </div>
     ),
@@ -215,9 +235,20 @@ const PatientDetail: React.FC = () => {
     rcp: (
         <div className="space-y-6">
             <Card title="Historique des décisions RCP">
+                 {user.role === 'admin' && (
+                    <div className="flex justify-end mb-4">
+                        <button 
+                            onClick={() => setDecisionModalOpen(true)}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
+                            Ajouter une décision
+                        </button>
+                    </div>
+                )}
                 <div className="flow-root">
                     <ul className="-mb-8">
-                        {patient.rcpHistory.map((decision, decisionIdx) => (
+                        {patient.rcpHistory.length > 0 ? patient.rcpHistory.map((decision, decisionIdx) => (
                             <li key={decision.date}>
                                 <div className="relative pb-8">
                                     {decisionIdx !== patient.rcpHistory.length - 1 ? (
@@ -229,31 +260,40 @@ const PatientDetail: React.FC = () => {
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
                                             </span>
                                         </div>
-                                        <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                            <div>
-                                                <p className="text-sm text-slate-500">
-                                                    Décision du <time dateTime={decision.date}>{decision.date}</time>
-                                                </p>
-                                                <p className="font-semibold text-slate-900">{decision.decision}</p>
-                                                <div className="mt-2 text-sm text-slate-700 space-y-2">
-                                                    <div>
-                                                        <span className="font-medium text-slate-600">Traitement :</span>
-                                                        <p className="pl-2">{decision.treatments}</p>
-                                                    </div>
-                                                     <div>
-                                                        <span className="font-medium text-slate-600">Argumentaire :</span>
-                                                        <p className="pl-2">{decision.summary}</p>
-                                                    </div>
+                                        <div className="min-w-0 flex-1 pt-1.5">
+                                             <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="text-sm text-slate-500">
+                                                        Décision du <time dateTime={decision.date}>{new Date(decision.date).toLocaleDateString('fr-FR')}</time>
+                                                    </p>
+                                                    <p className="font-semibold text-slate-900 mt-1">{decision.decision}</p>
+                                                </div>
+                                                <div className="text-right text-sm whitespace-nowrap text-slate-500">
+                                                    <EvidenceBadge category={decision.evidenceCategory} />
                                                 </div>
                                             </div>
-                                            <div className="text-right text-sm whitespace-nowrap text-slate-500">
-                                                <EvidenceBadge category={decision.evidenceCategory} />
+
+                                            <div className="mt-3 text-sm text-slate-700 space-y-3 bg-slate-50 p-4 rounded-md border border-slate-200">
+                                                <div>
+                                                    <span className="font-medium text-slate-800">Argumentaire :</span>
+                                                    <p className="pl-2 mt-1">{decision.summary}</p>
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium text-slate-800">Plan de Soins (PPS) :</span>
+                                                    <p className="pl-2 mt-1">{decision.pps}</p>
+                                                </div>
+                                                 <div>
+                                                    <span className="font-medium text-slate-800">Participants :</span>
+                                                    <p className="pl-2 mt-1 text-slate-600">{decision.participants}</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </li>
-                        ))}
+                        )) : (
+                            <p className="text-center text-slate-500 py-4">Aucune décision enregistrée pour le moment.</p>
+                        )}
                     </ul>
                 </div>
             </Card>
@@ -265,6 +305,12 @@ const PatientDetail: React.FC = () => {
 
   return (
     <div className="space-y-6">
+        <RcpDecisionModal
+            isOpen={isDecisionModalOpen}
+            onClose={() => setDecisionModalOpen(false)}
+            onSave={handleSaveDecision}
+            patientName={patient.name}
+        />
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div>
                 <h1 className="text-3xl font-bold text-slate-800">{patient.name}</h1>

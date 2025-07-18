@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from './ui/Card';
 import { TnmClassifier } from './TnmClassifier';
-import { Patient, PerformanceStatus, TnmDetails, RcpDecision } from '../types';
+import { Patient, PerformanceStatus, TnmDetails, RcpDecision, PsychoSocialData } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -20,6 +20,12 @@ const initialTnmState: TnmDetails = {
     stage: 'Inconnu',
     tumorLocation: '',
     tumorDescription: '',
+};
+
+const initialPsychoSocialState: PsychoSocialData = {
+    context: '',
+    patientWishes: '',
+    gpOpinion: '',
 };
 
 type PatientFormData = Omit<Patient, 'id' | 'rcpHistory' | 'name' | 'submittedById' | 'submittedByName' | 'rcpStatus' | 'viewedBy'> & {
@@ -42,6 +48,7 @@ const initialPatientState: PatientFormData = {
   referringDoctor: { name: '', specialty: 'Pneumologue' },
   socioProfessional: { profession: '', exposures: '' },
   anamnesis: { medicalHistory: '', surgicalHistory: '', oncologicalHistory: '', familyHistory: '' },
+  psychoSocial: initialPsychoSocialState,
   lifeHabits: { smokingStatus: 'Non-fumeur', smokingPacksPerYear: 0, smokingCessationDate: '', alcohol: '', otherSubstances: '' },
   clinicalInfo: {
     discoveryCircumstances: '',
@@ -215,6 +222,11 @@ const AddPatient: React.FC = () => {
                         <FormField label="Antécédents chirurgicaux" className="sm:col-span-3"><textarea rows={2} value={formData.anamnesis.surgicalHistory} onChange={e => handleDataChange('anamnesis.surgicalHistory', e.target.value)} /></FormField>
                         <FormField label="Antécédents oncologiques" className="sm:col-span-3"><textarea rows={2} value={formData.anamnesis.oncologicalHistory} onChange={e => handleDataChange('anamnesis.oncologicalHistory', e.target.value)} /></FormField>
                     </FormSection>
+                     <FormSection title="Contexte Psycho-Social & Avis Médical">
+                        <FormField label="Contexte psycho-social et familial" className="sm:col-span-6"><textarea rows={2} value={formData.psychoSocial.context} onChange={e => handleDataChange('psychoSocial.context', e.target.value)} placeholder="Situation familiale, professionnelle, environnement..."/></FormField>
+                        <FormField label="Souhaits du patient" className="sm:col-span-3"><textarea rows={2} value={formData.psychoSocial.patientWishes} onChange={e => handleDataChange('psychoSocial.patientWishes', e.target.value)} placeholder="Volontés, craintes, objectifs..."/></FormField>
+                        <FormField label="Avis du médecin traitant (si recueilli)" className="sm:col-span-3"><textarea rows={2} value={formData.psychoSocial.gpOpinion} onChange={e => handleDataChange('psychoSocial.gpOpinion', e.target.value)} placeholder="Résumé de l'échange avec le MT..." /></FormField>
+                    </FormSection>
                     <FormSection title="Habitudes de vie & Clinique">
                         <FormField label="Statut tabagique" className="sm:col-span-2"><select value={formData.lifeHabits.smokingStatus} onChange={e => handleDataChange('lifeHabits.smokingStatus', e.target.value)}><option>Non-fumeur</option><option>Ancien fumeur</option><option>Fumeur actuel</option></select></FormField>
                         <FormField label="Paquets-années" className="sm:col-span-2"><input type="number" value={formData.lifeHabits.smokingPacksPerYear} onChange={e => handleDataChange('lifeHabits.smokingPacksPerYear', parseFloat(e.target.value))} /></FormField>
@@ -223,11 +235,6 @@ const AddPatient: React.FC = () => {
                         <FormField label="Taille (cm)" className="sm:col-span-2"><input type="number" value={formData.clinicalInfo.exam.heightCm} onChange={e => handleDataChange('clinicalInfo.exam.heightCm', parseFloat(e.target.value))} /></FormField>
                         <FormField label="Performance Status" className="sm:col-span-2"><select value={formData.clinicalInfo.exam.performanceStatus} onChange={e => handleDataChange('clinicalInfo.exam.performanceStatus', e.target.value)}>{Object.values(PerformanceStatus).map(s => <option key={s} value={s}>{s}</option>)}</select></FormField>
                         <FormField label="Détails examen physique" className="sm:col-span-6"><textarea rows={3} value={formData.clinicalInfo.exam.physicalExamDetails} onChange={e => handleDataChange('clinicalInfo.exam.physicalExamDetails', e.target.value)} /></FormField>
-                    </FormSection>
-                    <FormSection title="Évaluation Gériatrique (si pertinent)">
-                        <FormField label="Dépistage Onco-Gériatrique" className="sm:col-span-6"><input type="text" value={formData.geriatricAssessment.oncoGeriatricScreening} onChange={e => handleDataChange('geriatricAssessment.oncoGeriatricScreening', e.target.value)} placeholder="Ex: G8 pathologique (score de 12)" /></FormField>
-                        <FormField label="Évaluation Cognitive" className="sm:col-span-3"><textarea rows={2} value={formData.geriatricAssessment.cognitiveAssessment} onChange={e => handleDataChange('geriatricAssessment.cognitiveAssessment', e.target.value)} placeholder="Ex: MMSE à 28/30, test de l'horloge normal" /></FormField>
-                        <FormField label="Statut d'autonomie" className="sm:col-span-3"><textarea rows={2} value={formData.geriatricAssessment.autonomyStatus} onChange={e => handleDataChange('geriatricAssessment.autonomyStatus', e.target.value)} placeholder="Ex: ADL 6/6, IADL 3/4 (difficulté transports)"/></FormField>
                     </FormSection>
                 </div>
             );
@@ -242,6 +249,11 @@ const AddPatient: React.FC = () => {
                         <FormField label="Biologie standard (synthèse)" className="sm:col-span-6"><textarea rows={2} value={formData.paraclinicalData.standardBiology} onChange={e => handleDataChange('paraclinicalData.standardBiology', e.target.value)} /></FormField>
                         <FormField label="Fonction respiratoire (EFR)" className="sm:col-span-3"><textarea rows={2} value={formData.paraclinicalData.functionalExplorations.efr} onChange={e => handleDataChange('paraclinicalData.functionalExplorations.efr', e.target.value)} /></FormField>
                         <FormField label="Fonction cardiaque" className="sm:col-span-3"><textarea rows={2} value={formData.paraclinicalData.functionalExplorations.cardiacEvaluation} onChange={e => handleDataChange('paraclinicalData.functionalExplorations.cardiacEvaluation', e.target.value)} /></FormField>
+                    </FormSection>
+                     <FormSection title="Évaluation Gériatrique (si pertinent)">
+                        <FormField label="Dépistage Onco-Gériatrique" className="sm:col-span-6"><input type="text" value={formData.geriatricAssessment.oncoGeriatricScreening} onChange={e => handleDataChange('geriatricAssessment.oncoGeriatricScreening', e.target.value)} placeholder="Ex: G8 pathologique (score de 12)" /></FormField>
+                        <FormField label="Évaluation Cognitive" className="sm:col-span-3"><textarea rows={2} value={formData.geriatricAssessment.cognitiveAssessment} onChange={e => handleDataChange('geriatricAssessment.cognitiveAssessment', e.target.value)} placeholder="Ex: MMSE à 28/30, test de l'horloge normal" /></FormField>
+                        <FormField label="Statut d'autonomie" className="sm:col-span-3"><textarea rows={2} value={formData.geriatricAssessment.autonomyStatus} onChange={e => handleDataChange('geriatricAssessment.autonomyStatus', e.target.value)} placeholder="Ex: ADL 6/6, IADL 3/4 (difficulté transports)"/></FormField>
                     </FormSection>
                 </div>
             );

@@ -84,7 +84,7 @@ const PatientList: React.FC = () => {
     <Card>
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">
-          {user.role === 'admin' ? 'Tous les Dossiers Patients' : 'Mes Dossiers Patients'}
+          {user.role === 'admin' ? 'Tous les Dossiers' : 'Mes Dossiers Soumis'}
         </h1>
          <div className="w-full md:w-1/3">
             <input 

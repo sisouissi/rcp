@@ -36,6 +36,12 @@ export const mockPatients: Patient[] = [
       oncologicalHistory: "Néant.",
       familyHistory: "Père décédé d'un infarctus du myocarde à 65 ans. Mère en bonne santé."
     },
+    
+    psychoSocial: {
+        context: "Patient vivant avec son épouse, autonome. Anxieux face à la maladie.",
+        patientWishes: "Souhaite un traitement curatif si possible, avec un maximum de préservation de sa qualité de vie.",
+        gpOpinion: "Dr. Martin soutient la démarche et insiste sur la gestion de l'anxiété du patient."
+    },
 
     lifeHabits: {
       smokingStatus: "Ancien fumeur",
@@ -116,9 +122,11 @@ export const mockPatients: Patient[] = [
     rcpHistory: [
       {
         date: '2024-07-15',
+        participants: 'Dr. Moreau, Dr. Lefebvre, Dr. Valjean (Chirurgien), Dr. Curie (Radiothérapeute)',
         decision: 'Chirurgie première : Lobectomie supérieure droite par thoracoscopie.',
         treatments: 'Lobectomie supérieure droite par thoracoscopie.',
-        summary: 'Patient opérable avec une maladie localisée et une mutation EGFR. Proposition de chirurgie curative, à discuter pour un traitement adjuvant post-opératoire.',
+        summary: 'Patient opérable avec une maladie localisée et une mutation EGFR. La chirurgie curative est la meilleure option.',
+        pps: 'Consultation pré-anesthésie, puis hospitalisation pour chirurgie. Suivi post-opératoire et discussion d\'un traitement adjuvant en fonction des résultats de la pièce opératoire.',
         evidenceCategory: '1',
       },
     ],
@@ -144,6 +152,11 @@ export const mockPatients: Patient[] = [
     viewedBy: [],
     socioProfessional: { profession: "Enseignante", exposures: "Néant" },
     anamnesis: { medicalHistory: "Aucun", surgicalHistory: "Aucun", oncologicalHistory: "Aucun", familyHistory: "Mère avec cancer du sein à 60 ans." },
+    psychoSocial: {
+        context: "Patiente vivant seule, son fils est très présent. Très angoissée par la situation.",
+        patientWishes: "Privilégie le contrôle de la maladie et le maintien de son autonomie le plus longtemps possible.",
+        gpOpinion: "Dr. Dubois confirme l'importance d'un soutien psychologique."
+    },
     lifeHabits: { smokingStatus: "Non-fumeuse", smokingPacksPerYear: 0, alcohol: "Occasionnel", otherSubstances: "Néant" },
     clinicalInfo: {
       discoveryCircumstances: "Douleurs thoraciques et altération de l'état général.",
@@ -209,9 +222,11 @@ export const mockPatients: Patient[] = [
     rcpHistory: [
       {
         date: '2024-06-28',
+        participants: 'Dr. Moreau, Dr. Dubois, Dr. Valois',
         decision: 'Traitement systémique par immunothérapie (Pembrolizumab) en première ligne. Radiothérapie stéréotaxique sur la métastase cérébrale.',
         treatments: 'Immunothérapie: Pembrolizumab. Radiothérapie stéréotaxique cérébrale.',
         summary: 'Maladie métastatique avec expression forte de PD-L1. Indication d\'une immunothérapie. Traitement local de la métastase cérébrale pour contrôle symptomatique.',
+        pps: 'Début du Pembrolizumab en hôpital de jour. Consultation avec radiothérapeute pour planification de la radiothérapie cérébrale. Consultation de support psychologique proposée.',
         evidenceCategory: '1'
       },
     ],

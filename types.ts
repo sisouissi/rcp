@@ -1,5 +1,6 @@
 
 
+
 export enum PerformanceStatus {
   ECOG_0 = "ECOG 0: Fully active",
   ECOG_1 = "ECOG 1: Restricted in strenuous activity",
@@ -16,15 +17,6 @@ export interface User {
   name: string; // from profiles table (full_name)
   specialty: string; // from profiles table
 }
-
-export interface Profile {
-  id: string;
-  full_name: string;
-  role: 'admin' | 'doctor';
-  specialty: string | null;
-  email?: string;
-}
-
 
 export interface GeneralPractitioner {
   name: string;
@@ -150,6 +142,12 @@ export interface ClinicalInfo {
     };
 }
 
+export interface PsychoSocialData {
+  context: string;
+  patientWishes: string;
+  gpOpinion: string;
+}
+
 export interface ParaclinicalData {
     standardBiology: string; 
     tumorMarkers: string;
@@ -206,6 +204,7 @@ export interface Patient {
   lifeHabits: LifeHabits;
   clinicalInfo: ClinicalInfo;
   geriatricAssessment: GeriatricAssessment;
+  psychoSocial: PsychoSocialData;
   paraclinicalData: ParaclinicalData;
   pathologyData: PathologyData;
   
@@ -224,9 +223,11 @@ export interface Patient {
 
 export interface RcpDecision {
   date: string;
-  decision: string;
-  treatments: string;
-  summary: string;
+  decision: string; // Proposition thérapeutique
+  treatments: string; // Traitements / Modalités
+  summary: string; // Argumentaire
+  pps: string; // Programme Personnalisé de Soins
+  participants: string; // Participants à la RCP
   evidenceCategory?: EvidenceCategory;
 }
 
