@@ -246,7 +246,7 @@ export const getAiAssistantResponse = async (patient: Patient, queryType: AiQuer
       },
     });
 
-    const jsonText = response.text.trim();
+const jsonText = (response.text ?? '').trim();
     return JSON.parse(jsonText) as AiSuggestion[];
   } catch (error) {
     console.error("Error with AI Assistant:", error);
