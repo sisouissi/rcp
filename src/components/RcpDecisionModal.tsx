@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal } from './ui/Modal';
-import { RcpDecision, EvidenceCategory } from '../types';
+import { RcpDecision } from '../types';
 
 interface RcpDecisionModalProps {
   isOpen: boolean;
