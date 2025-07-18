@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { Patient, PsychoSocialData } from '../types';
+import { Patient } from '../types';
 import { mockPatients, mockUsers } from '../data/mockData';
 
 const supabaseUrl = process.env.SUPABASE_URL || "https://placeholder.supabase.co";
