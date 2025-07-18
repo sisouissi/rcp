@@ -12,13 +12,12 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || "placeholder-anon-key";
 
 if (supabaseUrl === "https://placeholder.supabase.co" || supabaseAnonKey === "placeholder-anon-key") {
   // We don't throw an error here, as it would crash the entire application.
-  // Instead, the application will load, and any Supabase operations (like login) will fail.
-  // This provides a better user experience, as the user will see a "Login Failed" message
-  // and can check the console for this more detailed warning.
+  // Instead, the application will load in a 'demo mode' using mock data.
+  // The user will see a login screen with demo credentials and this warning in the console.
   console.warn(`
     *****************************************************************
     * WARNING: Supabase credentials are not configured.             *
-    * The application will not connect to the backend.              *
+    * The application will run in DEMO MODE.                        *
     * Please configure SUPABASE_URL and SUPABASE_ANON_KEY env vars. *
     *****************************************************************
   `);

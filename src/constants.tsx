@@ -1,4 +1,4 @@
-export const APP_NAME = 'RCP 2025';
+import React from 'react';
 
 export const DashboardIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -45,7 +45,7 @@ export const SettingsIcon = () => (
 );
 
 export const navLinks = [
-    { to: "/", label: "Tableau de Bord", icon: <DashboardIcon /> },
+    { to: "/dashboard", label: "Tableau de Bord", icon: <DashboardIcon /> },
     { to: "/rcp-board", label: "Salle de RCP", icon: <RcpIcon /> },
     { to: "/patients", label: "Tous les Dossiers", icon: <PatientsIcon /> },
     { to: "/add-patient", label: "Soumettre un Dossier", icon: <AddPatientIcon /> },

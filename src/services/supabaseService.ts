@@ -9,7 +9,7 @@ const isDemoMode = supabaseUrl === "https://placeholder.supabase.co";
 let demoPatients: Patient[] = JSON.parse(JSON.stringify(mockPatients));
 
 // Helper to convert snake_case from Supabase to camelCase for the app
-const toCamelCase = (obj: any): any => {
+const toCamelCase = (obj: any): Record<string, any> => {
     if (Array.isArray(obj)) {
         return obj.map(v => toCamelCase(v));
     } else if (obj !== null && typeof obj === 'object') {
@@ -23,7 +23,7 @@ const toCamelCase = (obj: any): any => {
 };
 
 // Helper to convert camelCase from app to snake_case for Supabase
-const toSnakeCase = (obj: any): any => {
+const toSnakeCase = (obj: any): Record<string, any> => {
     if (Array.isArray(obj)) {
         return obj.map(v => toSnakeCase(v));
     } else if (obj !== null && typeof obj === 'object') {
@@ -43,7 +43,7 @@ const getAllPatients = async (): Promise<Patient[]> => {
 
     const { data, error } = await supabase
         .from('patients')
-        .select(`*, submittedBy:submitted_by_id (full_name)`);
+        .select(`*, profiles(full_name)`);
 
     if (error) {
         console.error("Error fetching patients:", error);
@@ -54,7 +54,7 @@ const getAllPatients = async (): Promise<Patient[]> => {
         const patientData = toCamelCase(p);
         return {
             ...patientData,
-            submittedByName: patientData.submittedBy?.fullName || 'Inconnu'
+            submittedByName: patientData.profiles?.fullName || 'Inconnu'
         } as Patient;
     });
 };
@@ -67,7 +67,7 @@ const getPatient = async (id: string): Promise<Patient | undefined> => {
 
     const { data, error } = await supabase
         .from('patients')
-        .select(`*, submittedBy:submitted_by_id (full_name)`)
+        .select(`*, profiles(full_name)`)
         .eq('id', id)
         .single();
 
@@ -82,7 +82,7 @@ const getPatient = async (id: string): Promise<Patient | undefined> => {
     const patientData = toCamelCase(data);
     return {
         ...patientData,
-        submittedByName: patientData.submittedBy?.fullName || 'Inconnu'
+        submittedByName: patientData.profiles?.fullName || 'Inconnu'
     } as Patient;
 };
 
@@ -98,7 +98,6 @@ const addPatient = async (patient: Omit<Patient, 'id' | 'submittedById' | 'submi
             submittedByName: submitter.name,
             rcpStatus: 'pending',
             viewedBy: [],
-            psychoSocial: patient.psychoSocial || { context: '', patientWishes: '', gpOpinion: '' },
         };
         demoPatients.unshift(newPatient); // Add to start of array
         return Promise.resolve(newPatient);
@@ -109,10 +108,10 @@ const addPatient = async (patient: Omit<Patient, 'id' | 'submittedById' | 'submi
       submitted_by_id: userId,
       rcp_status: 'pending'
     };
-
-    const { data, error } = await supabase
-        .from('patients')
-        .insert([patientForDb as any])
+    
+    const { data, error } = await (supabase
+        .from('patients') as any)
+        .insert([patientForDb])
         .select()
         .single();
 
@@ -133,13 +132,13 @@ const updatePatient = async (patient: Patient): Promise<Patient> => {
     }
 
     const patientForDb = toSnakeCase(patient);
+    // Remove properties that don't exist on the 'patients' table or are handled by the DB
     delete patientForDb.submitted_by_name;
-    // The patient object may contain a 'submittedBy' from the join, which is not a real column.
-    delete patientForDb.submitted_by;
-    delete patientForDb.id;
+    delete patientForDb.profiles; // This is a joined object, not a column
+    delete patientForDb.id; // Cannot update the primary key
 
-    const { data, error } = await supabase
-        .from('patients')
+    const { data, error } = await (supabase
+        .from('patients') as any)
         .update(patientForDb)
         .eq('id', patient.id)
         .select()

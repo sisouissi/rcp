@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { Patient, RcpDecision } from '../types';
 import { generateLetterToGP } from '../services/geminiService';
@@ -57,7 +55,7 @@ const LetterGenerator: React.FC<LetterGeneratorProps> = ({ patient }) => {
                 value={selectedDecision?.date || ''}
             >
                 {patient.rcpHistory.map((d: RcpDecision) => (
-                    <option key={d.date} value={d.date}>RCP du {d.date} - {d.decision.substring(0, 50)}...</option>
+                    <option key={d.date} value={d.date}>RCP du {new Date(d.date).toLocaleDateString('fr-FR')} - {d.decision.substring(0, 50)}...</option>
                 ))}
             </select>
         </div>

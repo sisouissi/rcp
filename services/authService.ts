@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { User } from '../types';
+import { AuthError, Session, User as SupabaseUser, AuthResponse, AuthChangeEvent } from '@supabase/supabase-js';
 
 const signIn = async (email: string, password: string): Promise<AuthResponse['data']> => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -56,47 +57,50 @@ const getUser = async (): Promise<User | null> => {
 
 
 const onAuthStateChange = (callback: (user: User | null) => void) => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
+    const handleAuthChange = (event: AuthChangeEvent, session: Session | null) => {
         if (event === 'SIGNED_OUT' || !session) {
             callback(null);
             return;
         }
 
-        // For any event that results in a session, get the user profile.
-        try {
-            const profileResponse = await supabase
-                .from('profiles')
-                .select('full_name, role, specialty')
-                .eq('id', session.user.id)
-                .single();
-
-            if (profileResponse.error) {
-                console.error('Error fetching profile on auth change:', profileResponse.error.message);
-                await supabase.auth.signOut();
-                callback(null);
-                return;
-            }
+        (async () => {
+            try {
+                const profileResponse = await supabase
+                    .from('profiles')
+                    .select('full_name, role, specialty')
+                    .eq('id', session.user.id)
+                    .single();
             
-            const profile = profileResponse.data;
-            if (profile) {
-                 const user: User = {
-                    id: session.user.id,
-                    email: session.user.email,
-                    name: profile.full_name,
-                    role: profile.role,
-                    specialty: profile.specialty,
-                };
-                callback(user);
-            } else {
-                console.warn(`User ${session.user.id} is signed in but has no profile. Signing out.`);
-                await supabase.auth.signOut();
+                if(profileResponse.error) {
+                    console.error('Error fetching user profile on auth change:', profileResponse.error.message);
+                    await supabase.auth.signOut();
+                    callback(null);
+                    return;
+                }
+                
+                const profile = profileResponse.data;
+                if(profile) {
+                     const user: User = {
+                        id: session.user.id,
+                        email: session.user.email,
+                        name: profile.full_name,
+                        role: profile.role,
+                        specialty: profile.specialty,
+                    };
+                    callback(user);
+                } else {
+                    console.warn(`User ${session.user.id} is signed in but has no profile. Signing out.`);
+                    await supabase.auth.signOut();
+                    callback(null);
+                }
+            } catch (e) {
+                console.error("Unexpected error in onAuthStateChange handler:", e);
                 callback(null);
             }
-        } catch (e) {
-            console.error("Unexpected error in onAuthStateChange handler:", e);
-            callback(null);
-        }
-    });
+        })();
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthChange);
 
     return subscription;
 }

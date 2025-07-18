@@ -17,8 +17,6 @@ const calculateT = (size: number, invasions: TInvasion[], nodules: TNodules): st
     const hasT2Invasion = invasions.some(i => ["main_bronchus", "visceral_pleura", "atelectasis"].includes(i));
     if ((size > 3 && size <= 5) || hasT2Invasion) {
         if (size > 4 && size <= 5) return 'T2b';
-        // A tumor >3cm but <=4cm is T2a.
-        // A tumor <=3cm with T2 invasion is T2, and by convention falls into the lowest sub-category (T2a).
         return 'T2a';
     }
     
@@ -28,7 +26,7 @@ const calculateT = (size: number, invasions: TInvasion[], nodules: TNodules): st
         if (size <= 1) return 'T1a';
     }
 
-    if (size === 0) return 'TX'; // Cannot be assessed without more info for T0/Tis
+    if (size === 0 && invasions.length === 0 && nodules === 'none') return 'T0/Tis'; 
     
     return 'TX';
 };
@@ -55,7 +53,6 @@ const calculateM = (metaType: MType): string => {
 };
 
 const calculateStage = (t: string, n: string, m: string): string => {
-    // Stage IV
     if (m === 'M1c1' || m === 'M1c2') return 'IVB';
     if (m === 'M1a' || m === 'M1b') return 'IVA';
 
@@ -74,13 +71,13 @@ const calculateStage = (t: string, n: string, m: string): string => {
                 break;
             case 'N1':
                 if (t.startsWith('T1') || t.startsWith('T2')) return 'IIB';
-                if (tBase === 'T3' || tBase === 'T4') return 'IIIA';
+                if (tBase === 'T3') return 'IIIA';
+                if (tBase === 'T4') return 'IIIB';
                 break;
             case 'N2a':
-                return 'IIIA';
             case 'N2b':
-                 if (t.startsWith('T1')) return 'IIIA';
-                 if (t.startsWith('T2') || tBase === 'T3' || tBase === 'T4') return 'IIIB';
+                 if (t.startsWith('T1') || t.startsWith('T2')) return 'IIIA';
+                 if (tBase === 'T3' || tBase === 'T4') return 'IIIB';
                  break;
             case 'N3':
                 if (t.startsWith('T1') || t.startsWith('T2')) return 'IIIB';

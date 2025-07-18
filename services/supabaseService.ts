@@ -1,4 +1,7 @@
+
+
 import { supabase } from './supabaseClient';
+import { Patient, PsychoSocialData } from '../types';
 import { mockPatients, mockUsers } from '../data/mockData';
 
 const supabaseUrl = process.env.SUPABASE_URL || "https://placeholder.supabase.co";
@@ -8,7 +11,7 @@ const isDemoMode = supabaseUrl === "https://placeholder.supabase.co";
 let demoPatients: Patient[] = JSON.parse(JSON.stringify(mockPatients));
 
 // Helper to convert snake_case from Supabase to camelCase for the app
-const toCamelCase = (obj: any): any => {
+const toCamelCase = (obj: any): Record<string, any> => {
     if (Array.isArray(obj)) {
         return obj.map(v => toCamelCase(v));
     } else if (obj !== null && typeof obj === 'object') {
@@ -22,7 +25,7 @@ const toCamelCase = (obj: any): any => {
 };
 
 // Helper to convert camelCase from app to snake_case for Supabase
-const toSnakeCase = (obj: any): any => {
+const toSnakeCase = (obj: any): Record<string, any> => {
     if (Array.isArray(obj)) {
         return obj.map(v => toSnakeCase(v));
     } else if (obj !== null && typeof obj === 'object') {
@@ -109,9 +112,9 @@ const addPatient = async (patient: Omit<Patient, 'id' | 'submittedById' | 'submi
       rcp_status: 'pending'
     };
 
-    const { data, error } = await supabase
-        .from('patients')
-        .insert([patientForDb as any])
+    const { data, error } = await (supabase
+        .from('patients') as any)
+        .insert([patientForDb])
         .select()
         .single();
 
@@ -137,8 +140,8 @@ const updatePatient = async (patient: Patient): Promise<Patient> => {
     delete patientForDb.submitted_by;
     delete patientForDb.id;
 
-    const { data, error } = await supabase
-        .from('patients')
+    const { data, error } = await (supabase
+        .from('patients') as any)
         .update(patientForDb)
         .eq('id', patient.id)
         .select()

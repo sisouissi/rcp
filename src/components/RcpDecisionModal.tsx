@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal } from './ui/Modal';
-import { RcpDecision } from '../types';
+import { RcpDecision, EvidenceCategory } from '../types';
 
 interface RcpDecisionModalProps {
   isOpen: boolean;
@@ -96,7 +96,7 @@ const RcpDecisionModal: React.FC<RcpDecisionModalProps> = ({ isOpen, onClose, on
             <FormField label="Catégorie de preuve (NCCN)">
                 <select
                     value={decision.evidenceCategory}
-                    onChange={(e) => handleChange('evidenceCategory', e.target.value)}
+                    onChange={(e) => handleChange('evidenceCategory', e.target.value as EvidenceCategory)}
                     className="w-full"
                 >
                     <option value="1">Catégorie 1</option>

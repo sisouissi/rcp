@@ -110,6 +110,7 @@ export const mockPatients: Patient[] = [
       invasions: [],
       nodules: 'none',
       n_involvement: ['n1'],
+      isMultipleN2Stations: false,
       metaType: 'm0',
       tumorLocation: 'Lobe Supérieur Droit',
       tumorDescription: 'Masse spiculée sans contact pariétal.',

@@ -15,9 +15,9 @@ const PatientCard: React.FC<{ patient: Patient; isDraggable: boolean }> = ({ pat
         e.dataTransfer.effectAllowed = 'move';
       }
     }}
-    className={`bg-white p-4 rounded-lg border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-400 transition-all cursor-grab active:cursor-grabbing ${isDraggable ? '' : 'cursor-not-allowed'}`}
+    className={`bg-white p-4 rounded-lg border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-400 transition-all ${isDraggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-not-allowed'}`}
   >
-    <Link to={`/patients/${patient.id}`}>
+    <Link to={`/patients/${patient.id}`} className="group">
         <p className="font-semibold text-slate-800 group-hover:text-blue-600">{patient.name}</p>
         <p className="text-sm text-slate-500">{patient.hospitalId}</p>
         <div className="mt-2 flex justify-between items-center">
@@ -72,14 +72,14 @@ const RcpColumn: React.FC<{
       className={`flex-1 min-w-[300px] rounded-lg p-4 ${bg} border-2 border-dashed ${isOver && canDrop ? border : 'border-transparent'} transition-colors`}
     >
       <h2 className="text-lg font-bold text-slate-700 mb-4 px-2">{title} ({patients.length})</h2>
-      <div className="space-y-3 h-full overflow-y-auto">
+      <div className="space-y-3 h-full overflow-y-auto pr-2">
         {patients.length > 0 ? (
           patients.map(p => (
-            <PatientCard key={p.id} patient={p} isDraggable={status !== 'discussed'} />
+            <PatientCard key={p.id} patient={p} isDraggable={status !== 'discussed' && canDrop} />
           ))
         ) : (
           <div className="flex items-center justify-center h-32 text-slate-500 text-sm">
-            Aucun dossier dans cette colonne.
+            {canDrop ? "Glissez-déposez un dossier ici" : "Aucun dossier"}
           </div>
         )}
       </div>
@@ -127,7 +127,14 @@ const RcpBoard: React.FC = () => {
   const filteredPatients = useMemo(() => ({
     pending: patients.filter(p => p.rcpStatus === 'pending').sort((a,b) => a.name.localeCompare(b.name)),
     selected: patients.filter(p => p.rcpStatus === 'selected').sort((a,b) => a.name.localeCompare(b.name)),
-    discussed: patients.filter(p => p.rcpStatus === 'discussed').sort((a,b) => a.name.localeCompare(b.name)),
+    discussed: patients.filter(p => p.rcpStatus === 'discussed').sort((a, b) => {
+        // Sort by the most recent decision date, descending.
+        // Assumes rcpHistory is sorted descending, which it is from PatientDetail.
+        const dateA = a.rcpHistory[0]?.date ? new Date(a.rcpHistory[0].date).getTime() : 0;
+        const dateB = b.rcpHistory[0]?.date ? new Date(b.rcpHistory[0].date).getTime() : 0;
+        if (dateB !== dateA) return dateB - dateA;
+        return a.name.localeCompare(b.name); // Fallback to name sort
+    }),
   }), [patients]);
 
   if (isLoading) {
@@ -165,7 +172,7 @@ const RcpBoard: React.FC = () => {
           status="discussed"
           patients={filteredPatients.discussed}
           onDrop={handlePatientStatusUpdate}
-          canDrop={false} // Can't drop into 'discussed'
+          canDrop={false} // Can't drop into 'discussed' by design
         />
       </div>
     </div>

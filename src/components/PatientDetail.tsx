@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { TnmClassifier } from './TnmClassifier';
@@ -66,7 +64,7 @@ const PatientDetail: React.FC = () => {
 
   const handleSaveDecision = async (newDecision: RcpDecision) => {
     if (patient) {
-      const updatedHistory = [...patient.rcpHistory, newDecision];
+      const updatedHistory = [...patient.rcpHistory, newDecision].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       // When a decision is added, status moves to 'discussed'
       const updatedPatient = { ...patient, rcpHistory: updatedHistory, rcpStatus: 'discussed' as const };
       setPatient(updatedPatient);
@@ -249,7 +247,7 @@ const PatientDetail: React.FC = () => {
                 <div className="flow-root">
                     <ul className="-mb-8">
                         {patient.rcpHistory.length > 0 ? patient.rcpHistory.map((decision, decisionIdx) => (
-                            <li key={decision.date}>
+                            <li key={decision.date + decisionIdx}>
                                 <div className="relative pb-8">
                                     {decisionIdx !== patient.rcpHistory.length - 1 ? (
                                         <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200" aria-hidden="true" />
@@ -297,7 +295,7 @@ const PatientDetail: React.FC = () => {
                     </ul>
                 </div>
             </Card>
-            <LetterGenerator patient={patient} />
+            {patient.rcpHistory.length > 0 && <LetterGenerator patient={patient} />}
         </div>
     )
   };

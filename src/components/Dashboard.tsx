@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { Card } from './ui/Card';
 import { Link } from 'react-router-dom';
@@ -60,6 +58,12 @@ const Dashboard: React.FC = () => {
     </Card>
   );
 
+  const getLatestRcpDate = (p: Patient) => {
+    if (!p.rcpHistory || p.rcpHistory.length === 0) return 0;
+    // Assuming history is sorted descending, which it should be.
+    return new Date(p.rcpHistory[0].date).getTime();
+  };
+
   const AdminDashboard = () => {
      const stageData = [
       { name: 'Stade I', count: patients.filter(p => p.tnm.stage.startsWith('I')).length },
@@ -67,7 +71,7 @@ const Dashboard: React.FC = () => {
       { name: 'Stade III', count: patients.filter(p => p.tnm.stage.startsWith('III')).length },
       { name: 'Stade IV', count: patients.filter(p => p.tnm.stage.startsWith('IV')).length },
     ];
-    const recentPatients = [...patients].sort((a,b) => new Date(b.rcpHistory[0]?.date || 0).getTime() - new Date(a.rcpHistory[0]?.date || 0).getTime()).slice(0, 5);
+    const recentPatients = [...patients].sort((a,b) => getLatestRcpDate(b) - getLatestRcpDate(a)).slice(0, 5);
     
     return (
         <>
@@ -127,14 +131,15 @@ const Dashboard: React.FC = () => {
   };
   
   const DoctorDashboard = () => {
-    const rcpSelectedPatients = patients.filter(p => p.rcpStatus === 'selected');
-    const recentSubmissions = patients.sort((a,b) => new Date(b.rcpHistory[0]?.date || 0).getTime() - new Date(a.rcpHistory[0]?.date || 0).getTime()).slice(0, 5);
+    const myPatients = patients.filter(p => p.submittedById === user.id);
+    const rcpSelectedPatients = myPatients.filter(p => p.rcpStatus === 'selected');
+    const recentSubmissions = myPatients.sort((a,b) => getLatestRcpDate(b) - getLatestRcpDate(a)).slice(0, 5);
 
     return (
         <>
             <p className="text-slate-600">Bienvenue, {user.name}. Vous pouvez accéder aux dossiers que vous avez soumis.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-                <StatCard title="Mes Dossiers Soumis" value={patients.length} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>} />
+                <StatCard title="Mes Dossiers Soumis" value={myPatients.length} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>} />
                 <StatCard title="Sélectionnés pour RCP" value={rcpSelectedPatients.length} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
                 <StatCard title="Prochaine RCP" value={nextRcpDate} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>} />
             </div>

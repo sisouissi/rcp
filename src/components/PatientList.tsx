@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from './ui/Card';
@@ -55,9 +53,13 @@ const PatientList: React.FC = () => {
   }
 
   const patientsToDisplay = useMemo(() => {
+    if (!user) return [];
+    
     let filteredList = allPatients;
-    // RLS in Supabase already filters for doctors, but this provides an instant client-side filter if needed
-    if (user?.role === 'doctor') {
+
+    // In demo mode, doctors see only their own patients.
+    // In production, RLS on Supabase handles this, but client-side filtering is good for responsiveness.
+    if (user.role === 'doctor') {
       filteredList = allPatients.filter(p => p.submittedById === user.id);
     }
     

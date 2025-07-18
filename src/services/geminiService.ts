@@ -83,8 +83,8 @@ export const generateCaseSummaryForMdt = async (patient: Patient): Promise<MdtSu
       },
     });
 
-const jsonText = (response.text ?? '').trim();
-return JSON.parse(jsonText) as MdtSummary;
+    const jsonText = response.text.trim();
+    return JSON.parse(jsonText) as MdtSummary;
   } catch (error) {
     console.error("Error generating MDT summary:", error);
     if (error instanceof Error && error.message.includes("API key not valid")) {
@@ -107,7 +107,7 @@ Le ton doit être formel, clair et confraternel. La sortie doit être uniquement
 
 **Informations à utiliser :**
 
-*   **Patient :** ${patient.name} (Né(e) le ${patient.dob})
+*   **Patient :** ${patient.name} (Né(e) le ${new Date(patient.dob).toLocaleDateString('fr-FR')})
 *   **Médecin traitant :** Dr. ${patient.gp.name}
 *   **Données cliniques clés :**
     *   **Diagnostic :** ${patient.pathologyData.histologicalType}, ${patient.pathologyData.grading}.
@@ -116,20 +116,19 @@ Le ton doit être formel, clair et confraternel. La sortie doit être uniquement
     *   **Antécédents notables :** ${patient.anamnesis.medicalHistory}.
     *   **Tabagisme :** ${patient.lifeHabits.smokingStatus}.
 *   **Biologie Moléculaire :**
-    *   PD-L1: ${patient.pathologyData.molecularBiology.pdl1}
-    *   EGFR: ${patient.pathologyData.molecularBiology.egfr}
-    *   ALK: ${patient.pathologyData.molecularBiology.alk}
+    *   PD-L1: ${patient.pathologyData.molecularBiology.pdl1 || 'N/A'}
+    *   EGFR: ${patient.pathologyData.molecularBiology.egfr || 'N/A'}
+    *   ALK: ${patient.pathologyData.molecularBiology.alk || 'N/A'}
 *   **Décision de la RCP :**
-    *   **Date :** ${rcpDecision.date}
+    *   **Date :** ${new Date(rcpDecision.date).toLocaleDateString('fr-FR')}
     *   **Question posée :** ${patient.rcpQuestion || 'Non spécifiée'}
     *   **Décision :** ${rcpDecision.decision}
     *   **Argumentaire :** ${rcpDecision.summary}
+    *   **Plan de soins :** ${rcpDecision.pps}
 
 ---
 
 **Structure et instructions de rédaction :**
-
-Utilisez des titres de niveau 2 (commençant par '## ') pour les sections principales.
 
 ## Objet
 Rédigez un objet clair, par exemple : "Concerne : RCP d'Oncologie Thoracique pour votre patient(e), ${patient.name}"
@@ -138,16 +137,16 @@ Rédigez un objet clair, par exemple : "Concerne : RCP d'Oncologie Thoracique po
 Utilisez "Cher Confrère," ou "Chère Confrère,".
 
 ## Introduction
-Mentionnez que le dossier du patient a été discuté en RCP.
+Mentionnez que le dossier du patient a été discuté en RCP à la date spécifiée.
 
 ## Synthèse du Dossier Clinique
 Résumez les points cliniques clés listés ci-dessus en utilisant des listes à puces.
 
-## Décision de la RCP du ${rcpDecision.date}
-Présentez clairement la question, la décision prise et son rationnel. Utilisez des sous-titres de niveau 3 (###) et du texte en gras si nécessaire pour la clarté.
+## Décision de la RCP du ${new Date(rcpDecision.date).toLocaleDateString('fr-FR')}
+Présentez clairement la décision prise et son rationnel.
 
 ## Plan de Soins et Suivi
-Détaillez les actions à venir (prochain rendez-vous, examens, etc.) et le suivi à long terme. Mentionnez que vous restez à sa disposition pour toute question.
+Détaillez le Programme Personnalisé de Soins (PPS) et les actions à venir (prochain rendez-vous, examens, etc.). Mentionnez que vous restez à sa disposition pour toute question.
 
 ## (Formule de politesse)
 Terminez par une formule comme "Avec nos salutations confraternelles,".
@@ -163,9 +162,9 @@ Générez uniquement la lettre en Markdown. Ne pas inclure les titres de section
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
-});
-return response.text ?? '';
-} catch (error) {
+    });
+    return response.text;
+  } catch (error) {
     console.error("Error generating letter:", error);
     if (error instanceof Error && error.message.includes("API key not valid")) {
         throw new Error("La clé API Gemini est invalide. Veuillez vérifier sa configuration.");
@@ -216,7 +215,7 @@ export const getAiAssistantResponse = async (patient: Patient, queryType: AiQuer
     **Requête:**
     ${userQuery}
     
-    Fournis une réponse structurée et concise.
+    Fournis une réponse structurée et concise sous forme d'un tableau JSON.
   `;
 
   const suggestionSchema = {
@@ -227,7 +226,7 @@ export const getAiAssistantResponse = async (patient: Patient, queryType: AiQuer
       justification: { type: Type.STRING, description: 'La justification de la recommandation, expliquant son importance clinique.' },
       nccnReference: { type: Type.STRING, description: 'Une référence à la page des directives NCCN (ex: "NSCL-5", "NSCL-B 2 of 6") si applicable, sinon "N/A".' }
     },
-    required: ["title", "recommendation", "justification"]
+    required: ["title", "recommendation", "justification", "nccnReference"]
   };
 
   const responseSchema = {
@@ -240,13 +239,13 @@ export const getAiAssistantResponse = async (patient: Patient, queryType: AiQuer
       model: "gemini-2.5-flash",
       contents: prompt,
       config: {
-        systemInstruction: "Tu es un assistant expert en oncologie thoracique. Tes réponses doivent être rigoureusement basées sur les directives NCCN pour le cancer du poumon non à petites cellules (Non-Small Cell Lung Cancer, version 7.2025). Sois concis et pertinent. La sortie doit être uniquement un objet JSON.",
+        systemInstruction: "Tu es un assistant expert en oncologie thoracique. Tes réponses doivent être rigoureusement basées sur les directives NCCN pour le cancer du poumon non à petites cellules (Non-Small Cell Lung Cancer, version la plus récente). Sois concis et pertinent. La sortie doit être uniquement un tableau d'objets JSON.",
         responseMimeType: "application/json",
         responseSchema: responseSchema,
       },
     });
 
-const jsonText = (response.text ?? '').trim();
+    const jsonText = response.text.trim();
     return JSON.parse(jsonText) as AiSuggestion[];
   } catch (error) {
     console.error("Error with AI Assistant:", error);

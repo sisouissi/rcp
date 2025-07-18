@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect, ReactNode } from
 import { User } from '../types';
 import { authService } from '../services/authService';
 import { mockUsers } from '../data/mockData';
+import { supabase } from '../services/supabaseClient';
 
 const supabaseUrl = process.env.SUPABASE_URL || "https://placeholder.supabase.co";
 const isDemoMode = supabaseUrl === "https://placeholder.supabase.co";
@@ -13,10 +14,6 @@ interface AuthContextType {
   signOut: () => void;
 }
 
-const login = async (email: string, password: string) => {
-  // ton code existant
-};
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -24,19 +21,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // For demo mode, we don't need to check for a live session.
+    // We start with no user logged in.
     if (isDemoMode) {
         setIsLoading(false);
-        return; // No subscription needed for demo mode
+        return;
     }
 
-    const subscription = authService.onAuthStateChange((currentUser) => {
-      setUser(currentUser);
-      setIsLoading(false);
-    });
+    // For live mode, immediately check for an existing session.
+    const checkUser = async () => {
+        const currentUser = await authService.getUser();
+        setUser(currentUser);
+        setIsLoading(false);
+    };
+
+    checkUser();
+
+    // Subscribe to future auth state changes.
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        const currentUser = await authService.getUser();
+        setUser(currentUser);
+        setIsLoading(false);
+      }
+    );
 
     // Cleanup subscription on unmount
     return () => {
-      subscription?.unsubscribe();
+      authListener?.subscription.unsubscribe();
     };
   }, []);
 
@@ -53,8 +65,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return foundUser;
     } else {
         const { user: supabaseUser } = await authService.signIn(email, password);
-        const profile = await authService.getUser();
-        setUser(profile);
+        // The onAuthStateChange listener will handle setting the user state.
         return supabaseUser;
     }
   };
@@ -64,7 +75,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(null);
     } else {
         await authService.signOut();
-        setUser(null);
+        // The onAuthStateChange listener will handle setting user to null.
     }
   };
 
