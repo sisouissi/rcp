@@ -13,7 +13,7 @@ interface AuthContextType {
   signOut: () => void;
 }
 
-const register = async (email: string, password: string) => {
+const login = async (email: string, password: string) => {
   // ton code existant
 };
 
