@@ -83,7 +83,7 @@ export const generateCaseSummaryForMdt = async (patient: Patient): Promise<MdtSu
       },
     });
 
-    const jsonText = response.text.trim();
+const jsonText = (response.text ?? '').trim();
     return JSON.parse(jsonText) as MdtSummary;
   } catch (error) {
     console.error("Error generating MDT summary:", error);
@@ -158,20 +158,27 @@ Signez en tant que "Le Comité RCP d'Oncologie Thoracique".
 Générez uniquement la lettre en Markdown. Ne pas inclure les titres de section qui sont entre parenthèses dans la structure ci-dessus.
 `;
 
+// src/services/geminiService.ts
+
+export async function generateLetter(prompt: string): Promise<string> {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
     });
-    return response.text;
+
+    // Sécurise contre undefined et force string
+    return (response.text ?? "").toString();
   } catch (error) {
     console.error("Error generating letter:", error);
+
     if (error instanceof Error && error.message.includes("API key not valid")) {
-        throw new Error("La clé API Gemini est invalide. Veuillez vérifier sa configuration.");
+      throw new Error("La clé API Gemini est invalide. Veuillez vérifier sa configuration.");
     }
-    return "Une erreur est survenue lors de la génération du courrier. Veuillez vérifier la console pour plus de détails.";
+
+    return "Une erreur est survenue lors de la génération du courrier.";
   }
-};
+}
 
 
 const formatPatientDataForPrompt = (patient: Patient): string => {
@@ -245,7 +252,7 @@ export const getAiAssistantResponse = async (patient: Patient, queryType: AiQuer
       },
     });
 
-    const jsonText = response.text.trim();
+const jsonText = (response.text ?? '').trim();
     return JSON.parse(jsonText) as AiSuggestion[];
   } catch (error) {
     console.error("Error with AI Assistant:", error);
