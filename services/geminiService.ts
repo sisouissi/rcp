@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Patient, RcpDecision, MdtSummary, AiSuggestion, AiQueryType } from "../types";
 
-const API_KEY = process.env.API_KEY;
+const API_KEY = process.env.GEMINI_API_KEY;
 
 let ai: GoogleGenAI | null = null;
 
@@ -13,7 +13,7 @@ if (API_KEY) {
     *****************************************************************
     * WARNING: Gemini API Key is not configured.                    *
     * All AI-powered features will be disabled.                     *
-    * Please configure the API_KEY environment variable.            *
+    * Please configure the GEMINI_API_KEY environment variable.     *
     *****************************************************************
     `
   );

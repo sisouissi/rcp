@@ -29,20 +29,22 @@ const getUser = async (): Promise<User | null> => {
         return null;
     }
 
-    const { data: profile, error: profileError } = await supabase
+    const profileResponse = await supabase
         .from('profiles')
         .select('full_name, role, specialty')
         .eq('id', session.user.id)
         .single();
     
-    if(profileError) {
-        console.error('Error fetching user profile:', profileError.message);
+    if(profileResponse.error) {
+        console.error('Error fetching user profile:', profileResponse.error.message);
         // This might happen if a user exists in auth but not in profiles. Sign them out.
-        supabase.auth.signOut();
+        await supabase.auth.signOut();
         return null;
     }
     
-    if(!profile) return null;
+    if(!profileResponse.data) return null;
+
+    const profile = profileResponse.data;
 
     return {
         id: session.user.id,
@@ -56,10 +58,43 @@ const getUser = async (): Promise<User | null> => {
 
 const onAuthStateChange = (callback: (user: User | null) => void) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if(event === 'SIGNED_IN' || event === 'INITIAL_SESSION'){
-           const user = await getUser();
-           callback(user);
-        } else if (event === 'SIGNED_OUT'){
+        if (event === 'SIGNED_OUT' || !session) {
+            callback(null);
+            return;
+        }
+
+        // For any event that results in a session, get the user profile.
+        try {
+            const profileResponse = await supabase
+                .from('profiles')
+                .select('full_name, role, specialty')
+                .eq('id', session.user.id)
+                .single();
+
+            if (profileResponse.error) {
+                console.error('Error fetching profile on auth change:', profileResponse.error.message);
+                await supabase.auth.signOut();
+                callback(null);
+                return;
+            }
+            
+            const profile = profileResponse.data;
+            if (profile) {
+                 const user: User = {
+                    id: session.user.id,
+                    email: session.user.email,
+                    name: profile.full_name,
+                    role: profile.role,
+                    specialty: profile.specialty,
+                };
+                callback(user);
+            } else {
+                console.warn(`User ${session.user.id} is signed in but has no profile. Signing out.`);
+                await supabase.auth.signOut();
+                callback(null);
+            }
+        } catch (e) {
+            console.error("Unexpected error in onAuthStateChange handler:", e);
             callback(null);
         }
     });

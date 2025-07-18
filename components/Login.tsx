@@ -11,7 +11,7 @@ const Login: React.FC = () => {
   const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+    const supabaseUrl = process.env.SUPABASE_URL || "https://placeholder.supabase.co";
     setIsDemo(supabaseUrl === "https://placeholder.supabase.co");
   }, []);
 

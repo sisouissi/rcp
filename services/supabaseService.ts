@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 import { Patient, PsychoSocialData } from '../types';
 import { mockPatients, mockUsers } from '../data/mockData';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+const supabaseUrl = process.env.SUPABASE_URL || "https://placeholder.supabase.co";
 const isDemoMode = supabaseUrl === "https://placeholder.supabase.co";
 
 // In-memory store for demo mode
@@ -109,13 +109,10 @@ const addPatient = async (patient: Omit<Patient, 'id' | 'submittedById' | 'submi
       submitted_by_id: userId,
       rcp_status: 'pending'
     };
-    
-    delete patientForDb.id;
-    delete patientForDb.submitted_by_name;
 
     const { data, error } = await supabase
         .from('patients')
-        .insert(patientForDb)
+        .insert(patientForDb as any)
         .select()
         .single();
 
@@ -139,6 +136,7 @@ const updatePatient = async (patient: Patient): Promise<Patient> => {
     delete patientForDb.submitted_by_name;
     // The patient object may contain a 'submittedBy' from the join, which is not a real column.
     delete patientForDb.submitted_by;
+    delete patientForDb.id;
 
     const { data, error } = await supabase
         .from('patients')
