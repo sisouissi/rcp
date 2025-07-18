@@ -9,7 +9,7 @@ const isDemoMode = supabaseUrl === "https://placeholder.supabase.co";
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  signIn: (email, password) => Promise<any>;
+  signIn: (email: string, password: string) => Promise<any>;
   signOut: () => void;
 }
 
