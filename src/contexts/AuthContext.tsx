@@ -14,7 +14,7 @@ interface AuthContextType {
 }
 
 const register = async (email: string, password: string) => {
-  // ton code
+  // ton code existant
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
