@@ -1,10 +1,10 @@
-import { User } from '../types';
-import { AuthError, Session, User as SupabaseUser, AuthResponse, AuthChangeEvent } from '@supabase/supabase-js';
+import { supabase } from './supabaseClient';
+import { AuthResponse } from '@supabase/supabase-js';
 
 const signIn = async (email: string, password: string): Promise<AuthResponse['data']> => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if(error) throw error;
-    return data;
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data;
 };
 
 const signOut = async (): Promise<void> => {
