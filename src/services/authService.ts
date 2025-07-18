@@ -1,4 +1,3 @@
-import { supabase } from './supabaseClient';
 import { User } from '../types';
 import { AuthError, Session, User as SupabaseUser, AuthResponse, AuthChangeEvent } from '@supabase/supabase-js';
 
