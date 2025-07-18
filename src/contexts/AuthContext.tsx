@@ -38,13 +38,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     checkUser();
 
     // Subscribe to future auth state changes.
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        const currentUser = await authService.getUser();
-        setUser(currentUser);
-        setIsLoading(false);
-      }
-    );
+const { data: authListener } = supabase.auth.onAuthStateChange(
+  async () => {
+    const currentUser = await authService.getUser();
+    setUser(currentUser);
+    setIsLoading(false);
+  }
+);
 
     // Cleanup subscription on unmount
     return () => {
