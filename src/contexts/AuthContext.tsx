@@ -13,6 +13,10 @@ interface AuthContextType {
   signOut: () => void;
 }
 
+const register = async (email: string, password: string) => {
+  // ton code
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
